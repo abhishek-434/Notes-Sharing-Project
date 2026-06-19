@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}{{ dept_info.name }} Notes - NotesHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <!-- Header -->
+  <div class="glass-card p-4 mb-5 animate-fade-in-up" style="border-color:rgba(99,102,241,0.3);">
+    <div class="d-flex align-items-center gap-4 flex-wrap">
+      <div class="d-flex align-items-center justify-content-center rounded-3 flex-shrink-0"
+           style="width:72px;height:72px;background:{{ dept_info.color }}20;border:1px solid {{ dept_info.color }}40;font-size:2rem;">
+        <i class="bi {{ dept_info.icon }}" style="color:{{ dept_info.color }};"></i>
+      </div>
+      <div>
+        <h1 class="fw-800 mb-1">{{ dept_info.name }} Notes</h1>
+        <p style="color:var(--text-muted);margin:0;">{{ dept_info.full_name }} • {{ page_obj.paginator.count }} notes available</p>
+      </div>
+    </div>
+
+    <!-- Semester filter -->
+    <div class="d-flex flex-wrap gap-2 mt-4">
+      <a href="{% url 'categories:department' department %}" class="btn btn-sm {% if not semester %}btn-primary-gradient{% else %}btn-glass{% endif %} px-3">All Semesters</a>
+      {% for sem_key, sem_name in semester_choices %}
+        <a href="{% url 'categories:department' department %}?semester={{ sem_key }}" class="btn btn-sm {% if semester == sem_key %}btn-primary-gradient{% else %}btn-glass{% endif %} px-3">{{ sem_name }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="row g-3">
+    {% for note in page_obj %}
+      <div class="col-sm-6 col-lg-4" data-aos="fade-up">
+        <div class="note-card">
+          <div class="d-flex gap-2 mb-2 flex-wrap">
+            <span class="badge-dept {{ note.department }}">{{ note.get_department_display }}</span>
+            <span class="badge rounded-pill px-2 py-1" style="background:rgba(99,102,241,0.1);color:var(--primary-light);font-size:0.7rem;">Sem {{ note.semester }}</span>
+          </div>
+          <h6 class="note-card-title">{{ note.title }}</h6>
+          <p class="note-card-meta mb-3"><i class="bi bi-book me-1"></i>{{ note.subject }}</p>
+          <div class="note-card-footer">
+            <span style="color:var(--text-muted);font-size:0.8rem;"><i class="bi bi-download me-1"></i>{{ note.download_count }}</span>
+            <a href="{% url 'notes:detail' note.pk %}" class="btn btn-primary-gradient btn-sm px-3 py-1" style="font-size:0.78rem;">View</a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12 text-center py-5">
+        <p style="color:var(--text-muted);">No notes found for this filter.</p>
+        <a href="{% url 'notes:upload' %}" class="btn btn-primary-gradient mt-2">Upload {{ dept_info.name }} Notes</a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

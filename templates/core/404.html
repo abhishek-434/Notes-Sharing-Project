@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}404 - Page Not Found - NotesHub{% endblock %}
+{% block content %}
+<div style="min-height:80vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:2rem;">
+  <div class="animate-scale-in">
+    <div style="font-size:6rem;font-weight:900;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;">404</div>
+    <h2 class="fw-700 mt-3 mb-2">Page Not Found</h2>
+    <p style="color:var(--text-muted);max-width:400px;margin:0 auto 2rem;">The page you're looking for doesn't exist or has been moved.</p>
+    <div class="d-flex gap-3 justify-content-center">
+      <a href="{% url 'core:home' %}" class="btn btn-primary-gradient px-4">Go Home</a>
+      <a href="{% url 'notes:list' %}" class="btn btn-glass px-4">Browse Notes</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

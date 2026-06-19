@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+{% block title %}{{ note.title }} - NotesHub{% endblock %}
+{% block meta_description %}{{ note.description|truncatechars:160 }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-4" data-aos="fade-up">
+    <ol class="breadcrumb" style="background:transparent;padding:0;margin:0;font-size:0.85rem;">
+      <li class="breadcrumb-item"><a href="{% url 'core:home' %}" style="color:var(--text-secondary);"><i class="bi bi-house-door me-1"></i>Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'notes:list' %}" style="color:var(--text-secondary);">Notes</a></li>
+      <li class="breadcrumb-item active" style="color:var(--text-primary); font-weight:600;">{{ note.title|truncatechars:35 }}</li>
+    </ol>
+  </nav>
+
+  <div class="row g-4">
+    <!-- Main content -->
+    <div class="col-lg-8">
+      <!-- Note Header Card -->
+      <div class="glass-card p-4 mb-4 animate-fade-in-up" style="background:var(--bg-card);border:1px solid var(--border);">
+        <div class="d-flex gap-2 mb-3 flex-wrap">
+          <span class="badge-dept {{ note.department }}">{{ note.get_department_display }}</span>
+          <span class="badge rounded-pill px-3 py-2" style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border);font-size:0.75rem;">
+            Semester {{ note.semester }}
+          </span>
+          {% if note.is_featured %}
+            <span class="badge rounded-pill px-3 py-2" style="background:rgba(245,158,11,0.08);color:var(--warning);font-size:0.75rem;font-weight:600;">
+              ⭐ Featured
+            </span>
+          {% endif %}
+        </div>
+
+        <h1 class="fw-800 mb-2" style="font-size:clamp(1.5rem,3vw,2rem);letter-spacing:-0.02em;">{{ note.title }}</h1>
+        <p style="color:var(--text-secondary);font-size:0.95rem;" class="mb-3">
+          <i class="bi bi-book me-1"></i>{{ note.subject }}
+        </p>
+
+        {% if note.description %}
+          <p style="color:var(--text-secondary);line-height:1.7;font-size:0.925rem;">{{ note.description }}</p>
+        {% endif %}
+
+        <!-- Tags -->
+        {% if note.tags.all %}
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            {% for tag in note.tags.all %}
+              <span class="badge rounded-pill px-3 py-1" style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-secondary);font-size:0.75rem;">
+                #{{ tag.name }}
+              </span>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <!-- File info row -->
+        <div class="d-flex flex-wrap gap-4 mt-4 pt-3" style="border-top:1px solid var(--border);">
+          <div class="d-flex align-items-center gap-2" style="color:var(--text-muted);font-size:0.8rem;">
+            <i class="bi bi-file-earmark-code" style="color:var(--primary);"></i>
+            <span>{{ note.get_file_extension|upper|cut:'.' }}</span>
+          </div>
+          <div class="d-flex align-items-center gap-2" style="color:var(--text-muted);font-size:0.8rem;">
+            <i class="bi bi-hdd" style="color:var(--primary);"></i>
+            <span>{{ note.get_file_size }}</span>
+          </div>
+          <div class="d-flex align-items-center gap-2" style="color:var(--text-muted);font-size:0.8rem;">
+            <i class="bi bi-calendar3" style="color:var(--primary);"></i>
+            <span>{{ note.upload_date|date:"M d, Y" }}</span>
+          </div>
+          <div class="d-flex align-items-center gap-2" style="color:var(--text-muted);font-size:0.8rem;">
+            <i class="bi bi-eye" style="color:var(--primary);"></i>
+            <span>{{ note.view_count }} views</span>
+          </div>
+          <div class="d-flex align-items-center gap-2" style="color:var(--text-muted);font-size:0.8rem;">
+            <i class="bi bi-download" style="color:var(--primary);"></i>
+            <span>{{ note.download_count }} downloads</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex gap-3 mt-4 flex-wrap align-items-center">
+          <a href="{% url 'notes:download' note.pk %}" class="btn btn-primary-gradient px-4 py-2 fw-600">
+            <i class="bi bi-download me-2"></i>Download Note
+          </a>
+          {% if note.get_file_extension == '.pdf' %}
+            <button class="btn btn-glass px-4 py-2" data-bs-toggle="modal" data-bs-target="#previewModal">
+              <i class="bi bi-eye me-2"></i>Live Preview
+            </button>
+          {% endif %}
+          {% if user == note.uploader %}
+            <a href="{% url 'notes:delete' note.pk %}" class="btn btn-sm"
+               style="background:rgba(239,68,68,0.08);color:var(--danger);border:1px solid rgba(239,68,68,0.2);border-radius:50px;padding:0.45rem 1.25rem;font-size:0.85rem;font-weight:600;">
+              <i class="bi bi-trash me-1"></i>Delete
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- PDF Preview Modal -->
+      {% if note.get_file_extension == '.pdf' %}
+        <div class="modal fade" id="previewModal" tabindex="-1">
+          <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--border-radius);">
+              <div class="modal-header" style="border-color:var(--border);">
+                <h5 class="modal-title fw-700">{{ note.title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter: var(--bs-theme-dropdown-close-filter);"></button>
+              </div>
+              <div class="modal-body p-2">
+                <iframe src="{{ note.file.url }}" class="pdf-viewer" title="PDF Preview"></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Rating Container -->
+      {% if user.is_authenticated %}
+        <div class="glass-card p-3 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3" style="background:var(--bg-card);border:1px solid var(--border);">
+          <div>
+            <h6 class="fw-700 mb-1" style="font-size:0.9rem;">Rate this resource</h6>
+            {% if avg_rating %}
+              <p class="mb-0" style="color:var(--text-secondary);font-size:0.8rem;">
+                Average: {{ avg_rating|floatformat:1 }} ⭐ ({{ rating_count }} votes)
+              </p>
+            {% else %}
+              <p class="mb-0 text-muted" style="font-size:0.8rem;">No ratings yet</p>
+            {% endif %}
+          </div>
+          <form class="star-rating" id="rating-form">
+            {% csrf_token %}
+            {% for i in "54321" %}
+              <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}"
+                     class="star-rating-input" data-note-id="{{ note.pk }}"
+                     {% if user_rating == i|add:0 %}checked{% endif %}>
+              <label for="star{{ i }}">★</label>
+            {% endfor %}
+          </form>
+        </div>
+      {% endif %}
+
+      <!-- Comments Section -->
+      <div class="glass-card p-4 animate-fade-in-up" style="background:var(--bg-card);border:1px solid var(--border);">
+        <h4 class="fw-700 mb-4" style="font-size:1.15rem;letter-spacing:-0.01em;">
+          <i class="bi bi-chat-square-dots me-2 text-primary"></i>
+          Comments ({{ note.comments.count }})
+        </h4>
+
+        <!-- Add comment -->
+        {% if user.is_authenticated %}
+          <form method="post" action="{% url 'notes:add_comment' note.pk %}" class="mb-4">
+            {% csrf_token %}
+            <div class="d-flex gap-3 align-items-start">
+              {% if user.profile.profile_picture %}
+                <img src="{{ user.profile.profile_picture.url }}" class="avatar flex-shrink-0" width="36" height="36">
+              {% else %}
+                <div class="avatar-gradient flex-shrink-0" style="width:36px;height:36px;font-size:0.85rem;line-height:36px;">{{ user.username|first|upper }}</div>
+              {% endif %}
+              <div class="flex-grow-1">
+                {{ comment_form.content }}
+                <button type="submit" class="btn btn-primary-gradient btn-sm px-4 mt-2">
+                  <i class="bi bi-send me-1"></i>Post Comment
+                </button>
+              </div>
+            </div>
+          </form>
+        {% else %}
+          <div class="text-center py-4 mb-4 rounded-3" style="background:var(--bg-secondary);border:1px solid var(--border);">
+            <p style="color:var(--text-secondary);font-size:0.85rem;" class="mb-2">Log in to post questions or reviews</p>
+            <a href="{% url 'accounts:login' %}" class="btn btn-glass btn-sm px-4">Login</a>
+          </div>
+        {% endif %}
+
+        <!-- Comments list -->
+        {% for comment in comments %}
+          {% if not comment.is_deleted %}
+            <div class="comment-card mb-3" id="comment-{{ comment.id }}">
+              <div class="d-flex gap-3">
+                {% if comment.author.profile.profile_picture %}
+                  <img src="{{ comment.author.profile.profile_picture.url }}" class="avatar flex-shrink-0" width="36" height="36">
+                {% else %}
+                  <div class="avatar-gradient flex-shrink-0" style="width:36px;height:36px;font-size:0.8rem;line-height:36px;">{{ comment.author.username|first|upper }}</div>
+                {% endif %}
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <a href="{% url 'accounts:profile_detail' comment.author.username %}" class="fw-700" style="font-size:0.85rem;color:var(--text-primary);">
+                      {{ comment.author.profile.get_display_name }}
+                    </a>
+                    <small style="color:var(--text-muted);font-size:0.75rem;">{{ comment.created_at|timesince }} ago</small>
+                  </div>
+                  <p class="mb-2" style="color:var(--text-secondary);font-size:0.875rem;">{{ comment.content }}</p>
+                  {% if user.is_authenticated %}
+                    <button class="btn btn-sm border-0 p-0 reply-btn" data-comment-id="{{ comment.id }}"
+                            style="color:var(--primary);font-size:0.75rem;font-weight:600;background:transparent;">
+                      <i class="bi bi-reply me-1"></i>Reply
+                    </button>
+                  {% endif %}
+
+                  <!-- Reply form -->
+                  <div id="reply-form-{{ comment.id }}" class="d-none mt-3">
+                    <form method="post" action="{% url 'notes:add_comment' note.pk %}">
+                      {% csrf_token %}
+                      <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                      <textarea name="content" class="form-control mb-2" rows="2" placeholder="Write your reply..."></textarea>
+                      <button type="submit" class="btn btn-primary-gradient btn-sm px-3">Reply</button>
+                    </form>
+                  </div>
+
+                  <!-- Replies -->
+                  {% for reply in comment.replies.all %}
+                    {% if not reply.is_deleted %}
+                      <div class="comment-reply mt-3">
+                        <div class="d-flex gap-3">
+                          {% if reply.author.profile.profile_picture %}
+                            <img src="{{ reply.author.profile.profile_picture.url }}" class="avatar flex-shrink-0" width="28" height="28">
+                          {% else %}
+                            <div class="avatar-gradient flex-shrink-0" style="width:28px;height:28px;font-size:0.7rem;line-height:28px;">{{ reply.author.username|first|upper }}</div>
+                          {% endif %}
+                          <div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                              <a href="{% url 'accounts:profile_detail' reply.author.username %}" class="fw-700" style="font-size:0.8rem;color:var(--text-primary);">{{ reply.author.profile.get_display_name }}</a>
+                              <small style="color:var(--text-muted);font-size:0.7rem;">{{ reply.created_at|timesince }} ago</small>
+                            </div>
+                            <p style="color:var(--text-secondary);font-size:0.825rem;margin:0;">{{ reply.content }}</p>
+                          </div>
+                        </div>
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% empty %}
+          <div class="text-center py-4 text-muted" style="font-size:0.85rem;">
+            <i class="bi bi-chat-square mb-2 d-block" style="font-size:2rem;color:var(--text-muted);"></i>
+            No reviews yet. Start the conversation!
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <!-- Uploader info card -->
+      <div class="glass-card p-4 mb-4 animate-fade-in-right" style="background:var(--bg-card);border:1px solid var(--border);">
+        <h6 class="fw-700 mb-3" style="color:var(--text-muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;">Resource Author</h6>
+        <div class="d-flex align-items-center gap-3">
+          {% if note.uploader.profile.profile_picture %}
+            <img src="{{ note.uploader.profile.profile_picture.url }}" class="avatar" width="50" height="50" style="border:2px solid var(--primary);">
+          {% else %}
+            <div class="avatar-gradient" style="width:50px;height:50px;font-size:1.15rem;line-height:50px;background:var(--gradient-primary);">{{ note.uploader.username|first|upper }}</div>
+          {% endif %}
+          <div>
+            <a href="{% url 'accounts:profile_detail' note.uploader.username %}" class="fw-700 d-block" style="color:var(--text-primary);font-size:0.95rem;">
+              {{ note.uploader.profile.get_display_name }}
+            </a>
+            <small style="color:var(--text-muted);font-size:0.8rem;">@{{ note.uploader.username }}</small>
+            {% if note.uploader.profile.college_name %}
+              <small class="d-block text-secondary" style="font-size:0.75rem;margin-top:0.15rem;">{{ note.uploader.profile.college_name }}</small>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Similar Notes list -->
+      {% if similar_notes %}
+        <div class="glass-card p-4 animate-fade-in-right delay-200" style="background:var(--bg-card);border:1px solid var(--border);">
+          <h6 class="fw-700 mb-3" style="color:var(--text-muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;">Similar Resources</h6>
+          <div class="d-flex flex-column gap-3">
+            {% for similar in similar_notes %}
+              <a href="{% url 'notes:detail' similar.pk %}" class="d-flex gap-3 text-decoration-none p-2 rounded-3"
+                 style="border:1px solid var(--border);background:var(--bg-secondary);transition:all 0.2s;"
+                 onmouseenter="this.style.borderColor='var(--primary)';this.style.background='var(--bg-card)';"
+                 onmouseleave="this.style.borderColor='var(--border)';this.style.background='var(--bg-secondary)';">
+                <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-3" style="width:36px;height:36px;background:var(--bg-card);color:var(--primary);">
+                  <i class="bi {{ similar.get_file_icon }}" style="font-size:0.95rem;"></i>
+                </div>
+                <div>
+                  <div class="fw-600" style="font-size:0.825rem;color:var(--text-primary);line-height:1.35;">{{ similar.title|truncatechars:35 }}</div>
+                  <small style="color:var(--text-muted);font-size:0.75rem;">{{ similar.subject }} • <i class="bi bi-download"></i> {{ similar.download_count }}</small>
+                </div>
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

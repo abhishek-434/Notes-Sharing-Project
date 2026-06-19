@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}Discussion Forum - NotesHub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row g-4">
+    <!-- Main -->
+    <div class="col-lg-9">
+      <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3 animate-fade-in-up">
+        <div>
+          <h2 class="fw-800 mb-1">Discussion Forum</h2>
+          <p style="color:var(--text-muted);margin:0;">{{ total_questions }} questions from students</p>
+        </div>
+        {% if user.is_authenticated %}
+          <a href="{% url 'forum:ask' %}" class="btn btn-primary-gradient px-4">
+            <i class="bi bi-plus-circle me-2"></i>Ask Question
+          </a>
+        {% endif %}
+      </div>
+
+      <!-- Filters -->
+      <div class="glass-card p-3 mb-4">
+        <form method="get" class="d-flex gap-2 flex-wrap align-items-center">
+          <input type="text" name="q" class="form-control" placeholder="Search questions..." value="{{ query }}" style="max-width:300px;">
+          <div class="d-flex gap-2">
+            <a href="?filter=latest{% if query %}&q={{ query }}{% endif %}" class="btn btn-sm {% if filter_type == 'latest' %}btn-primary-gradient{% else %}btn-glass{% endif %} px-3">Latest</a>
+            <a href="?filter=unanswered{% if query %}&q={{ query }}{% endif %}" class="btn btn-sm {% if filter_type == 'unanswered' %}btn-primary-gradient{% else %}btn-glass{% endif %} px-3">Unanswered</a>
+            <a href="?filter=resolved{% if query %}&q={{ query }}{% endif %}" class="btn btn-sm {% if filter_type == 'resolved' %}btn-primary-gradient{% else %}btn-glass{% endif %} px-3">Resolved</a>
+          </div>
+          <button type="submit" class="btn btn-glass btn-sm px-3"><i class="bi bi-search"></i></button>
+        </form>
+      </div>
+
+      <!-- Questions list -->
+      <div class="d-flex flex-column gap-3">
+        {% for question in page_obj %}
+          <div class="glass-card p-4 hover-shimmer" data-aos="fade-up">
+            <div class="d-flex gap-4">
+              <!-- Stats column -->
+              <div class="text-center flex-shrink-0 d-none d-md-block" style="min-width:70px;">
+                <div class="fw-700" style="font-size:1.1rem;color:{% if question.answer_count > 0 %}var(--success){% else %}var(--text-muted){% endif %};">
+                  {{ question.answer_count }}
+                </div>
+                <div style="font-size:0.7rem;color:var(--text-muted);">answers</div>
+                <div class="mt-2 fw-700" style="font-size:1rem;color:var(--text-muted);">{{ question.views }}</div>
+                <div style="font-size:0.7rem;color:var(--text-muted);">views</div>
+              </div>
+
+              <!-- Content -->
+              <div class="flex-grow-1">
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                  {% if question.is_resolved %}
+                    <span class="badge rounded-pill px-2 py-1" style="background:rgba(16,185,129,0.15);color:#34d399;font-size:0.7rem;">✓ Resolved</span>
+                  {% endif %}
+                  {% for tag in question.tags.all %}
+                    <span class="badge rounded-pill px-2 py-1" style="background:var(--glass-bg);border:1px solid var(--glass-border);color:var(--text-secondary);font-size:0.7rem;">#{{ tag.name }}</span>
+                  {% endfor %}
+                </div>
+
+                <a href="{% url 'forum:detail' question.pk %}" class="fw-700 d-block mb-2" style="font-size:1.05rem;color:var(--text-primary);">
+                  {{ question.title }}
+                </a>
+                <p style="color:var(--text-muted);font-size:0.85rem;margin:0;">{{ question.body|truncatechars:180 }}</p>
+
+                <div class="d-flex align-items-center gap-3 mt-3">
+                  <div class="d-flex align-items-center gap-2">
+                    {% if question.author.profile.profile_picture %}
+                      <img src="{{ question.author.profile.profile_picture.url }}" class="avatar" width="22" height="22">
+                    {% else %}
+                      <div class="avatar-gradient" style="width:22px;height:22px;font-size:0.6rem;">{{ question.author.username|first|upper }}</div>
+                    {% endif %}
+                    <a href="{% url 'accounts:profile_detail' question.author.username %}" style="font-size:0.8rem;color:var(--text-muted);">
+                      {{ question.author.profile.get_display_name }}
+                    </a>
+                  </div>
+                  <small style="color:var(--text-muted);">{{ question.created_at|timesince }} ago</small>
+                  <div class="d-flex d-md-none gap-3 ms-auto">
+                    <span style="font-size:0.8rem;color:var(--text-muted);"><i class="bi bi-chat me-1"></i>{{ question.answer_count }}</span>
+                    <span style="font-size:0.8rem;color:var(--text-muted);"><i class="bi bi-eye me-1"></i>{{ question.views }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <div class="text-center py-5">
+            <i class="bi bi-chat-square-x" style="font-size:3.5rem;color:var(--text-muted);"></i>
+            <h4 class="mt-3" style="color:var(--text-secondary);">No questions yet</h4>
+            <p style="color:var(--text-muted);">Be the first to start a discussion!</p>
+            {% if user.is_authenticated %}
+              <a href="{% url 'forum:ask' %}" class="btn btn-primary-gradient mt-2">Ask Question</a>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Pagination -->
+      {% if page_obj.has_other_pages %}
+        <nav class="mt-4 d-flex justify-content-center">
+          <ul class="d-flex gap-2">
+            {% if page_obj.has_previous %}
+              <li><a class="btn btn-glass btn-sm px-3" href="?page={{ page_obj.previous_page_number }}&filter={{ filter_type }}{% if query %}&q={{ query }}{% endif %}"><i class="bi bi-chevron-left"></i></a></li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+              {% if page_obj.number == num %}
+                <li><span class="btn btn-primary-gradient btn-sm px-3">{{ num }}</span></li>
+              {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li><a class="btn btn-glass btn-sm px-3" href="?page={{ num }}&filter={{ filter_type }}{% if query %}&q={{ query }}{% endif %}">{{ num }}</a></li>
+              {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+              <li><a class="btn btn-glass btn-sm px-3" href="?page={{ page_obj.next_page_number }}&filter={{ filter_type }}{% if query %}&q={{ query }}{% endif %}"><i class="bi bi-chevron-right"></i></a></li>
+            {% endif %}
+          </ul>
+        </nav>
+      {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-3">
+      <div class="glass-card p-4 mb-4 animate-fade-in-right">
+        <h6 class="fw-700 mb-3" style="color:var(--text-muted);font-size:0.8rem;text-transform:uppercase;">Forum Stats</h6>
+        <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border);">
+          <span style="color:var(--text-secondary);font-size:0.9rem;">Total Questions</span>
+          <span class="fw-600" style="color:var(--primary-light);">{{ total_questions }}</span>
+        </div>
+      </div>
+
+      {% if user.is_authenticated %}
+        <div class="glass-card p-4 text-center">
+          <i class="bi bi-question-circle" style="font-size:2rem;color:var(--primary-light);"></i>
+          <p class="mt-2 mb-3" style="color:var(--text-muted);font-size:0.9rem;">Have a question? Ask the community!</p>
+          <a href="{% url 'forum:ask' %}" class="btn btn-primary-gradient w-100">Ask Question</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Create Account - NotesHub{% endblock %}
+
+{% block content %}
+<div class="auth-page" style="padding-top:calc(var(--navbar-height) + 2rem);padding-bottom:4rem;">
+  <div class="auth-card animate-scale-in" style="max-width:520px;">
+    <div class="text-center mb-4">
+      <div class="d-inline-flex align-items-center justify-content-center mb-3"
+           style="width:54px;height:54px;background:var(--gradient-primary);border-radius:14px;box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);">
+        <i class="bi bi-person-plus-fill text-white" style="font-size:1.35rem;"></i>
+      </div>
+      <h2 class="fw-800 mb-1" style="font-size:1.6rem;letter-spacing:-0.02em;">Join NotesHub</h2>
+      <p style="color:var(--text-secondary);font-size:0.875rem;">Create your free student account today</p>
+    </div>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label"><i class="bi bi-person-badge me-1" style="color:var(--primary);"></i>Username <span class="text-danger">*</span></label>
+          {{ form.username }}
+          {% if form.username.errors %}<div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ form.username.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label"><i class="bi bi-envelope me-1" style="color:var(--primary);"></i>Email Address <span class="text-danger">*</span></label>
+          {{ form.email }}
+          {% if form.email.errors %}<div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ form.email.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label"><i class="bi bi-person me-1" style="color:var(--primary);"></i>Full Name</label>
+          {{ form.full_name }}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label"><i class="bi bi-building me-1" style="color:var(--primary);"></i>College Name</label>
+          {{ form.college_name }}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label"><i class="bi bi-lock me-1" style="color:var(--primary);"></i>Password <span class="text-danger">*</span></label>
+          {{ form.password1 }}
+          {% if form.password1.errors %}<div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ form.password1.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label"><i class="bi bi-lock-fill me-1" style="color:var(--primary);"></i>Confirm Password <span class="text-danger">*</span></label>
+          {{ form.password2 }}
+          {% if form.password2.errors %}<div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ form.password2.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <!-- Password strength indicator -->
+      <div class="mt-2 mb-3">
+        <div class="progress-glass" style="height:4px;background:var(--bg-secondary);">
+          <div class="progress-bar" id="pass-strength-bar" style="width:0%;"></div>
+        </div>
+        <small id="pass-strength-text" style="color:var(--text-muted);font-size:0.75rem;margin-top:0.25rem;display:block;"></small>
+      </div>
+
+      <div class="form-check mb-4">
+        <input class="form-check-input" type="checkbox" id="agree" required style="background-color:var(--bg-secondary);border-color:var(--border);">
+        <label class="form-check-label small" for="agree" style="color:var(--text-secondary);">
+          I agree to the <a href="{% url 'core:terms' %}" style="color:var(--primary);font-weight:600;">Terms of Service</a>
+          and <a href="{% url 'core:privacy' %}" style="color:var(--primary);font-weight:600;">Privacy Policy</a>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary-gradient w-100 py-2 fw-600 mb-4" style="border-radius:10px;">
+        <i class="bi bi-person-plus me-2"></i>Create Account
+      </button>
+    </form>
+
+    <div class="text-center">
+      <p style="color:var(--text-secondary);font-size:0.875rem;margin:0;">
+        Already registered?
+        <a href="{% url 'accounts:login' %}" style="color:var(--primary);font-weight:700;">Sign in here</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+const passInput = document.querySelector('#id_password1');
+const bar = document.querySelector('#pass-strength-bar');
+const text = document.querySelector('#pass-strength-text');
+if (passInput) {
+  passInput.addEventListener('input', () => {
+    const val = passInput.value;
+    let strength = 0;
+    if (val.length >= 8) strength++;
+    if (/[A-Z]/.test(val)) strength++;
+    if (/[0-9]/.test(val)) strength++;
+    if (/[^A-Za-z0-9]/.test(val)) strength++;
+    const widths = ['25%','50%','75%','100%'];
+    const labels = ['Weak','Fair','Good','Strong'];
+    const colors = ['#ef4444','#f59e0b','#06b6d4','#10b981'];
+    if (val.length > 0) {
+      bar.style.width = widths[strength-1] || '0%';
+      bar.style.background = colors[strength-1] || colors[0];
+      text.textContent = 'Password strength: ' + (labels[strength-1] || 'Too short');
+      text.style.color = colors[strength-1] || colors[0];
+    } else {
+      bar.style.width = '0%';
+      text.textContent = '';
+    }
+  });
+}
+</script>
+{% endblock %}
+{% endblock %}

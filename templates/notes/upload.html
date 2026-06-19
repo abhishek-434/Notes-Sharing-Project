@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}Upload Notes - NotesHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="glass-card p-5 animate-fade-in-up">
+        <!-- Header -->
+        <div class="text-center mb-5">
+          <div class="d-inline-flex align-items-center justify-content-center mb-3"
+               style="width:72px;height:72px;background:var(--gradient-primary);border-radius:20px;box-shadow:0 8px 24px rgba(99,102,241,0.4);">
+            <i class="bi bi-upload text-white" style="font-size:1.75rem;"></i>
+          </div>
+          <h2 class="fw-800 mb-2">Upload Study Notes</h2>
+          <p style="color:var(--text-muted);">Share your knowledge with fellow students</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" novalidate id="upload-form">
+          {% csrf_token %}
+          <div class="row g-4">
+            <!-- Note Title -->
+            <div class="col-12">
+              <label class="form-label fw-600">Note Title <span class="text-danger">*</span></label>
+              {{ form.title }}
+              {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>{% endif %}
+            </div>
+
+            <!-- Subject -->
+            <div class="col-md-6">
+              <label class="form-label fw-600">Subject Name <span class="text-danger">*</span></label>
+              {{ form.subject }}
+              {% if form.subject.errors %}<div class="text-danger small mt-1">{{ form.subject.errors.0 }}</div>{% endif %}
+            </div>
+
+            <!-- Department -->
+            <div class="col-md-3">
+              <label class="form-label fw-600">Department <span class="text-danger">*</span></label>
+              {{ form.department }}
+              {% if form.department.errors %}<div class="text-danger small mt-1">{{ form.department.errors.0 }}</div>{% endif %}
+            </div>
+
+            <!-- Semester -->
+            <div class="col-md-3">
+              <label class="form-label fw-600">Semester <span class="text-danger">*</span></label>
+              {{ form.semester }}
+              {% if form.semester.errors %}<div class="text-danger small mt-1">{{ form.semester.errors.0 }}</div>{% endif %}
+            </div>
+
+            <!-- Description -->
+            <div class="col-12">
+              <label class="form-label fw-600">Description</label>
+              {{ form.description }}
+            </div>
+
+            <!-- Tags -->
+            <div class="col-12">
+              <label class="form-label fw-600">Tags</label>
+              {{ form.tags }}
+              <small style="color:var(--text-muted);">Add comma-separated tags for better discoverability</small>
+            </div>
+
+            <!-- File Upload -->
+            <div class="col-12">
+              <label class="form-label fw-600">Upload File <span class="text-danger">*</span></label>
+              <div class="dropzone p-4 text-center rounded-3" style="border:2px dashed var(--glass-border);cursor:pointer;transition:all 0.2s;background:var(--glass-bg);"
+                   id="dropzone" onclick="document.getElementById('id_file').click()">
+                <i class="bi bi-cloud-upload" style="font-size:2.5rem;color:var(--primary-light);"></i>
+                <p class="mt-2 mb-1 fw-600" style="color:var(--text-secondary);" id="dropzone-label">
+                  <span class="dropzone-label">Drag & drop your file here, or click to browse</span>
+                </p>
+                <small style="color:var(--text-muted);">PDF, DOC, DOCX, PPT, PPTX, ZIP • Max 50MB</small>
+              </div>
+              <div class="mt-2" style="display:none;">{{ form.file }}</div>
+              <div id="file-info" class="mt-2 p-3 rounded-3 d-none"
+                   style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);">
+                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                <span id="file-name" style="color:var(--text-secondary);"></span>
+              </div>
+              {% if form.file.errors %}<div class="text-danger small mt-1">{{ form.file.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <!-- Upload Guidelines -->
+          <div class="mt-4 p-3 rounded-3" style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);">
+            <h6 class="fw-600 mb-2" style="color:#22d3ee;font-size:0.85rem;"><i class="bi bi-info-circle me-1"></i>Upload Guidelines</h6>
+            <ul class="mb-0" style="color:var(--text-muted);font-size:0.82rem;padding-left:1.2rem;">
+              <li>Ensure the content is your own or properly cited</li>
+              <li>No copyrighted commercial content without permission</li>
+              <li>Clearly label the subject and semester for maximum discoverability</li>
+              <li>Notes violating guidelines will be removed by admin</li>
+            </ul>
+          </div>
+
+          <div class="d-flex gap-3 mt-5">
+            <button type="submit" class="btn btn-primary-gradient px-5 py-2 fw-600" id="submit-btn">
+              <i class="bi bi-upload me-2"></i>Upload Note
+            </button>
+            <a href="{% url 'notes:list' %}" class="btn btn-glass px-4 py-2">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+const fileInput = document.getElementById('id_file');
+const dropzone = document.getElementById('dropzone');
+const fileInfo = document.getElementById('file-info');
+const fileName = document.getElementById('file-name');
+const dropzoneLabel = document.querySelector('.dropzone-label');
+
+// Show hidden file input properly
+fileInput.style.display = 'block';
+fileInput.style.position = 'absolute';
+fileInput.style.opacity = '0';
+fileInput.style.pointerEvents = 'none';
+
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const size = file.size > 1024 * 1024 ? (file.size / (1024 * 1024)).toFixed(2) + ' MB' : (file.size / 1024).toFixed(1) + ' KB';
+    fileName.textContent = `${file.name} (${size})`;
+    fileInfo.classList.remove('d-none');
+    dropzoneLabel.textContent = file.name;
+    dropzone.style.borderColor = 'var(--success)';
+    dropzone.style.background = 'rgba(16,185,129,0.05)';
+  }
+});
+
+document.getElementById('upload-form').addEventListener('submit', (e) => {
+  const btn = document.getElementById('submit-btn');
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
+  btn.disabled = true;
+});
+
+// Drag and drop
+dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.style.borderColor = 'var(--primary)'; });
+dropzone.addEventListener('dragleave', () => { dropzone.style.borderColor = 'var(--glass-border)'; });
+dropzone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  if (e.dataTransfer.files.length) {
+    const dt = new DataTransfer();
+    dt.items.add(e.dataTransfer.files[0]);
+    fileInput.files = dt.files;
+    fileInput.dispatchEvent(new Event('change'));
+  }
+});
+</script>
+{% endblock %}
+{% endblock %}

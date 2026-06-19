@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{% block meta_description %}NotesHub - A modern platform for students to upload, discover, and download study notes across all departments and semesters.{% endblock %}">
+  <meta name="keywords" content="{% block meta_keywords %}study notes, college notes, BCA, MCA, B.Tech, download notes, student resources{% endblock %}">
+  <meta name="author" content="NotesHub">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="{% block og_title %}NotesHub - Share Knowledge, Grow Together{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Modern notes sharing platform for students{% endblock %}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+
+  <title>{% block title %}NotesHub - Share Knowledge, Grow Together{% endblock %}</title>
+
+  <!-- Bootstrap 5 Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <!-- Bootstrap 5 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <!-- AOS Animations -->
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+  
+  {% load static %}
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+
+  <!-- Dark mode (runs immediately to prevent flash) -->
+  <script src="{% static 'js/dark-mode.js' %}"></script>
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body {% if user.is_authenticated %}data-user-logged-in="true"{% endif %}>
+
+<!-- Scroll Progress Bar -->
+<div class="scroll-progress" id="scroll-progress"></div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="text-center">
+    <div class="loading-spinner mx-auto mb-3"></div>
+    <p class="text-secondary small">Loading...</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     NAVBAR
+ ══════════════════════════════════════ -->
+<nav class="navbar navbar-expand-lg fixed-top" id="mainNavbar">
+  <div class="container">
+    <!-- Brand -->
+    <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'core:home' %}">
+      <div style="width:32px;height:32px;background:var(--gradient-primary);border-radius:8px;display:flex;align-items:center;justify-content:center;box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);">
+        <i class="bi bi-book-fill text-white" style="font-size:0.9rem;"></i>
+      </div>
+      <span class="fw-800" style="letter-spacing: -0.03em;">Notes<span class="text-primary">Hub</span></span>
+    </a>
+
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" style="color:var(--text-primary);">
+      <i class="bi bi-list" style="font-size:1.4rem;"></i>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarMain">
+      <!-- Nav links -->
+      <ul class="navbar-nav mx-auto gap-1">
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.namespace == 'core' and request.resolver_match.url_name == 'home' %}active{% endif %}"
+             href="{% url 'core:home' %}">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.namespace == 'notes' %}active{% endif %}"
+             href="{% url 'notes:list' %}">
+            <i class="bi bi-journals me-1"></i>Notes
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.namespace == 'categories' %}active{% endif %}"
+             href="{% url 'categories:list' %}">
+            <i class="bi bi-grid-3x3-gap me-1"></i>Categories
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.namespace == 'forum' %}active{% endif %}"
+             href="{% url 'forum:list' %}">
+            <i class="bi bi-chat-dots me-1"></i>Forum
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.namespace == 'core' and request.resolver_match.url_name == 'about' %}active{% endif %}"
+             href="{% url 'core:about' %}">About</a>
+        </li>
+      </ul>
+
+      <!-- Right side -->
+      <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
+        <!-- Search -->
+        <div class="navbar-search d-none d-lg-block">
+          <form action="{% url 'notes:list' %}" method="get">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" name="q" id="search-input" placeholder="Search... (Ctrl+K)" autocomplete="off"
+                   value="{{ request.GET.q }}" aria-label="Search notes">
+          </form>
+        </div>
+
+        <!-- Dark mode toggle -->
+        <div class="dark-toggle" id="theme-toggle" role="button" aria-label="Toggle dark mode"
+             title="Toggle dark/light mode">
+          <i class="bi bi-moon-stars-fill" id="dark-mode-icon" style="display: none;"></i>
+        </div>
+
+        {% if user.is_authenticated %}
+          <!-- Notifications -->
+          <div class="dropdown">
+            <div class="notif-bell" id="notifBell" data-bs-toggle="dropdown" aria-expanded="false"
+                 role="button" aria-label="Notifications">
+              <i class="bi bi-bell-fill" style="font-size:1.1rem;"></i>
+              {% if unread_notifications_count > 0 %}
+                <span class="notif-badge">{{ unread_notifications_count }}</span>
+              {% endif %}
+            </div>
+            <div class="dropdown-menu dropdown-menu-end p-0 shadow-lg" style="width:320px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--border-radius);overflow:hidden;">
+              <div class="p-3 border-bottom d-flex justify-content-between align-items-center"
+                   style="border-color:var(--border)!important;">
+                <h6 class="mb-0 fw-600" style="color:var(--text-primary);">Notifications</h6>
+                <a href="{% url 'notifications:mark_all_read' %}" class="small" style="color:var(--primary);">Mark all read</a>
+              </div>
+              <div style="max-height:300px;overflow-y:auto;">
+                {% if recent_notifications %}
+                  {% for notif in recent_notifications %}
+                    <a href="{{ notif.url|default:'#' }}" class="d-flex align-items-start gap-3 p-3 text-decoration-none"
+                       style="border-bottom:1px solid var(--border);transition:background 0.2s;"
+                       onmouseenter="this.style.background='var(--bg-secondary)'" onmouseleave="this.style.background='transparent'">
+                      <div class="avatar-gradient flex-shrink-0" style="width:36px;height:36px;font-size:0.75rem;background:var(--gradient-primary);line-height:36px;">
+                        {% if notif.sender %}{{ notif.sender.username|first|upper }}{% else %}N{% endif %}
+                      </div>
+                      <div>
+                        <p class="mb-0 small" style="color:var(--text-primary);">{{ notif.message }}</p>
+                        <small style="color:var(--text-muted);">{{ notif.created_at|timesince }} ago</small>
+                      </div>
+                    </a>
+                  {% endfor %}
+                {% else %}
+                  <div class="p-4 text-center" style="color:var(--text-muted);">
+                    <i class="bi bi-bell-slash text-secondary" style="font-size:2rem;"></i>
+                    <p class="mt-2 mb-0 small">No new notifications</p>
+                  </div>
+                {% endif %}
+              </div>
+              <div class="p-2 text-center border-top" style="border-color:var(--border)!important;">
+                <a href="{% url 'notifications:list' %}" class="small fw-600" style="color:var(--primary);">View all notifications</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Upload button -->
+          <a href="{% url 'notes:upload' %}" class="btn btn-primary-gradient btn-sm px-3 d-none d-lg-flex align-items-center gap-1">
+            <i class="bi bi-upload"></i> Upload
+          </a>
+
+          <!-- User avatar dropdown -->
+          <div class="dropdown">
+            <button class="btn p-0 border-0 d-flex align-items-center gap-2" data-bs-toggle="dropdown" id="userDropdown">
+              {% if user.profile.profile_picture %}
+                <img src="{{ user.profile.profile_picture.url }}" alt="{{ user.username }}"
+                     class="avatar" width="34" height="34">
+              {% else %}
+                <div class="avatar-gradient" style="width:34px;height:34px;font-size:0.85rem;line-height:34px;">
+                  {{ user.username|first|upper }}
+                </div>
+              {% endif %}
+              <i class="bi bi-chevron-down d-none d-lg-block" style="font-size:0.7rem;color:var(--text-muted);"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end p-2 shadow-lg"
+                style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--border-radius);min-width:200px;">
+              <li class="px-3 py-2 border-bottom mb-1" style="border-color:var(--border)!important;">
+                <div class="fw-600" style="color:var(--text-primary);font-size:0.9rem;">{{ user.profile.get_display_name }}</div>
+                <div class="small" style="color:var(--text-muted);">@{{ user.username }}</div>
+              </li>
+              <li><a class="dropdown-item rounded-2 py-2" href="{% url 'dashboard:home' %}" style="color:var(--text-secondary);font-size:0.85rem;">
+                <i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+              <li><a class="dropdown-item rounded-2 py-2" href="{% url 'accounts:profile' %}" style="color:var(--text-secondary);font-size:0.85rem;">
+                <i class="bi bi-person me-2"></i>My Profile</a></li>
+              <li><a class="dropdown-item rounded-2 py-2" href="{% url 'notes:my_notes' %}" style="color:var(--text-secondary);font-size:0.85rem;">
+                <i class="bi bi-journals me-2"></i>My Notes</a></li>
+              <li><a class="dropdown-item rounded-2 py-2" href="{% url 'accounts:edit_profile' %}" style="color:var(--text-secondary);font-size:0.85rem;">
+                <i class="bi bi-gear me-2"></i>Settings</a></li>
+              {% if user.is_staff %}
+              <li><a class="dropdown-item rounded-2 py-2" href="/admin/" style="color:var(--text-secondary);font-size:0.85rem;">
+                <i class="bi bi-shield-check me-2"></i>Admin Panel</a></li>
+              {% endif %}
+              <li><hr class="dropdown-divider" style="border-color:var(--border);"></li>
+              <li>
+                <form method="post" action="{% url 'accounts:logout' %}">
+                  {% csrf_token %}
+                  <button type="submit" class="dropdown-item rounded-2 py-2" style="color:var(--danger);font-size:0.85rem;border:none;background:none;width:100%;text-align:left;">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                  </button>
+                </form>
+              </li>
+            </ul>
+          </div>
+
+        {% else %}
+          <a href="{% url 'accounts:login' %}" class="btn btn-glass btn-sm px-3">Login</a>
+          <a href="{% url 'accounts:register' %}" class="btn btn-primary-gradient btn-sm px-3">Sign Up</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     FLASH MESSAGES
+ ══════════════════════════════════════ -->
+{% if messages %}
+<div class="toast-container" style="top:calc(var(--navbar-height) + 1rem);right:1rem;position:fixed;z-index:9999;">
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} notif-toast auto-dismiss d-flex align-items-center gap-2 shadow mb-2"
+         style="max-width:380px;border-radius:12px;">
+      <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% elif message.tags == 'danger' %}x-circle-fill{% elif message.tags == 'warning' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %}"></i>
+      <span>{{ message }}</span>
+      <button type="button" class="btn-close ms-auto" style="font-size:0.7rem;"
+              onclick="this.closest('.alert').remove()"></button>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- ══════════════════════════════════════
+     MAIN CONTENT
+ ══════════════════════════════════════ -->
+<main style="padding-top:var(--navbar-height);">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ══════════════════════════════════════
+     FOOTER
+ ══════════════════════════════════════ -->
+<footer class="footer">
+  <div class="container">
+    <div class="row g-4 mb-4">
+      <div class="col-lg-4 col-md-6">
+        <div class="footer-brand mb-3">Notes<span class="text-primary">Hub</span></div>
+        <p class="small mb-3" style="color:var(--text-secondary);line-height:1.7;">
+          A modern platform empowering students to share knowledge, collaborate, and excel in their academic journey.
+        </p>
+        <div class="d-flex gap-2">
+          <a href="#" class="footer-social" title="Twitter"><i class="bi bi-twitter-x"></i></a>
+          <a href="#" class="footer-social" title="Instagram"><i class="bi bi-instagram"></i></a>
+          <a href="#" class="footer-social" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+          <a href="#" class="footer-social" title="GitHub"><i class="bi bi-github"></i></a>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-3 col-6">
+        <h6 class="fw-700 mb-3" style="color:var(--text-primary);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;">Platform</h6>
+        <a href="{% url 'notes:list' %}" class="footer-link">Browse Notes</a>
+        <a href="{% url 'categories:list' %}" class="footer-link">Categories</a>
+        <a href="{% url 'forum:list' %}" class="footer-link">Discussion Forum</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'notes:upload' %}" class="footer-link">Upload Notes</a>
+        {% endif %}
+      </div>
+
+      <div class="col-lg-2 col-md-3 col-6">
+        <h6 class="fw-700 mb-3" style="color:var(--text-primary);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;">Departments</h6>
+        <a href="{% url 'categories:department' 'BCA' %}" class="footer-link">BCA</a>
+        <a href="{% url 'categories:department' 'MCA' %}" class="footer-link">MCA</a>
+        <a href="{% url 'categories:department' 'BTECH' %}" class="footer-link">B.Tech</a>
+        <a href="{% url 'categories:department' 'MBA' %}" class="footer-link">MBA</a>
+      </div>
+
+      <div class="col-lg-2 col-md-3 col-6">
+        <h6 class="fw-700 mb-3" style="color:var(--text-primary);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;">Company</h6>
+        <a href="{% url 'core:about' %}" class="footer-link">About Us</a>
+        <a href="{% url 'core:contact' %}" class="footer-link">Contact</a>
+        <a href="{% url 'core:privacy' %}" class="footer-link">Privacy Policy</a>
+        <a href="{% url 'core:terms' %}" class="footer-link">Terms of Service</a>
+      </div>
+
+      <div class="col-lg-2 col-md-3 col-6">
+        <h6 class="fw-700 mb-3" style="color:var(--text-primary);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;">Account</h6>
+        {% if user.is_authenticated %}
+          <a href="{% url 'dashboard:home' %}" class="footer-link">Dashboard</a>
+          <a href="{% url 'accounts:profile' %}" class="footer-link">My Profile</a>
+          <a href="{% url 'notes:my_notes' %}" class="footer-link">My Notes</a>
+        {% else %}
+          <a href="{% url 'accounts:login' %}" class="footer-link">Login</a>
+          <a href="{% url 'accounts:register' %}" class="footer-link">Register</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="footer-bottom d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
+      <p class="mb-0 small" style="color:var(--text-muted);">
+        © {% now "Y" %} NotesHub. All rights reserved. Made with <i class="bi bi-heart-fill text-danger"></i> for students.
+      </p>
+      <div class="d-flex gap-3">
+        <a href="{% url 'core:privacy' %}" class="small text-muted" style="color:var(--text-muted);">Privacy</a>
+        <a href="{% url 'core:terms' %}" class="small text-muted" style="color:var(--text-muted);">Terms</a>
+        <a href="{% url 'core:contact' %}" class="small text-muted" style="color:var(--text-muted);">Contact</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+{% load static %}
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

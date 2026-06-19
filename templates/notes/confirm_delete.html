@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Delete Note - NotesHub{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-5">
+      <div class="glass-card p-5 text-center animate-scale-in">
+        <div style="width:72px;height:72px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
+          <i class="bi bi-trash-fill" style="font-size:1.75rem;color:var(--danger);"></i>
+        </div>
+        <h3 class="fw-800 mb-2">Delete Note?</h3>
+        <p style="color:var(--text-muted);margin-bottom:2rem;">
+          Are you sure you want to delete "<strong style="color:var(--text-primary);">{{ note.title }}</strong>"?
+          This action cannot be undone.
+        </p>
+        <div class="d-flex gap-3 justify-content-center">
+          <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn px-5 py-2 fw-600" style="background:rgba(239,68,68,0.15);color:var(--danger);border:1px solid rgba(239,68,68,0.3);border-radius:50px;">
+              <i class="bi bi-trash me-2"></i>Yes, Delete
+            </button>
+          </form>
+          <a href="{% url 'notes:my_notes' %}" class="btn btn-glass px-5 py-2">Cancel</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

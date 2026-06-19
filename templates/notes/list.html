@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% block title %}Notes Library - NotesHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex align-items-center justify-content-between mb-5 flex-wrap gap-3" data-aos="fade-up">
+    <div>
+      <h2 class="fw-800 mb-1" style="letter-spacing:-0.02em;">Notes Library</h2>
+      <p style="color:var(--text-secondary);margin:0;font-size:0.9rem;">{{ total_count }} notes shared by students{% if query %} matching "{{ query }}"{% endif %}</p>
+    </div>
+    {% if user.is_authenticated %}
+      <a href="{% url 'notes:upload' %}" class="btn btn-primary-gradient px-4 py-2">
+        <i class="bi bi-upload me-2"></i>Upload Note
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="row g-4">
+    <!-- Filters sidebar -->
+    <div class="col-lg-3">
+      <div class="filter-sidebar animate-fade-in-left">
+        <form method="get" id="filter-form">
+          {% if query %}
+            <input type="hidden" name="q" value="{{ query }}">
+          {% endif %}
+
+          <div class="filter-title mb-2">Search Library</div>
+          <div class="position-relative mb-4">
+            <i class="bi bi-search position-absolute" style="left:0.95rem;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:0.85rem;"></i>
+            <input type="text" name="q" class="form-control ps-5" style="border-radius:30px !important;" placeholder="Subject, topic, author..." value="{{ query }}" id="search-input">
+          </div>
+
+          <div class="filter-title mb-3">Departments</div>
+          <div class="d-flex flex-column gap-1 mb-4">
+            <a href="?{% if query %}q={{ query }}&{% endif %}{% if semester %}semester={{ semester }}&{% endif %}sort={{ sort }}"
+               class="d-flex align-items-center justify-content-between px-3 py-2 rounded-2 text-decoration-none {% if not department %}fw-700{% endif %}"
+               style="font-size:0.85rem;transition:all 0.2s;{% if not department %}background:rgba(79,70,229,0.08);color:var(--primary);{% else %}color:var(--text-secondary);{% endif %}"
+               onmouseenter="this.style.background='rgba(79,70,229,0.04)'"
+               onmouseleave="this.style.background='{% if not department %}rgba(79,70,229,0.08){% else %}transparent{% endif %}'">
+              <span>All Departments</span>
+              <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i>
+            </a>
+            {% for dept_key, dept_name in department_choices %}
+              <a href="?{% if query %}q={{ query }}&{% endif %}department={{ dept_key }}&{% if semester %}semester={{ semester }}&{% endif %}sort={{ sort }}"
+                 class="d-flex align-items-center justify-content-between px-3 py-2 rounded-2 text-decoration-none {% if department == dept_key %}fw-700{% endif %}"
+                 style="font-size:0.85rem;transition:all 0.2s;{% if department == dept_key %}background:rgba(79,70,229,0.08);color:var(--primary);{% else %}color:var(--text-secondary);{% endif %}"
+                 onmouseenter="this.style.background='rgba(79,70,229,0.04)'"
+                 onmouseleave="this.style.background='{% if department == dept_key %}rgba(79,70,229,0.08){% else %}transparent{% endif %}'">
+                <span>{{ dept_name }}</span>
+                <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i>
+              </a>
+            {% endfor %}
+          </div>
+
+          <div class="filter-title mb-3">Semesters</div>
+          <div class="d-flex flex-column gap-1 mb-4">
+            <a href="?{% if query %}q={{ query }}&{% endif %}{% if department %}department={{ department }}&{% endif %}sort={{ sort }}"
+               class="d-flex align-items-center justify-content-between px-3 py-2 rounded-2 text-decoration-none {% if not semester %}fw-700{% endif %}"
+               style="font-size:0.85rem;transition:all 0.2s;{% if not semester %}background:rgba(79,70,229,0.08);color:var(--primary);{% else %}color:var(--text-secondary);{% endif %}"
+               onmouseenter="this.style.background='rgba(79,70,229,0.04)'"
+               onmouseleave="this.style.background='{% if not semester %}rgba(79,70,229,0.08){% else %}transparent{% endif %}'">
+              <span>All Semesters</span>
+              <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i>
+            </a>
+            {% for sem_key, sem_name in semester_choices %}
+              <a href="?{% if query %}q={{ query }}&{% endif %}{% if department %}department={{ department }}&{% endif %}semester={{ sem_key }}&sort={{ sort }}"
+                 class="d-flex align-items-center justify-content-between px-3 py-2 rounded-2 text-decoration-none {% if semester == sem_key %}fw-700{% endif %}"
+                 style="font-size:0.85rem;transition:all 0.2s;{% if semester == sem_key %}background:rgba(79,70,229,0.08);color:var(--primary);{% else %}color:var(--text-secondary);{% endif %}"
+                 onmouseenter="this.style.background='rgba(79,70,229,0.04)'"
+                 onmouseleave="this.style.background='{% if semester == sem_key %}rgba(79,70,229,0.08){% else %}transparent{% endif %}'">
+                <span>{{ sem_name }}</span>
+                <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i>
+              </a>
+            {% endfor %}
+          </div>
+
+          <div class="filter-title mb-2">Sort By</div>
+          <select name="sort" class="form-select mb-2" onchange="this.form.submit()">
+            <option value="-upload_date" {% if sort == '-upload_date' %}selected{% endif %}>Latest First</option>
+            <option value="upload_date" {% if sort == 'upload_date' %}selected{% endif %}>Oldest First</option>
+            <option value="-download_count" {% if sort == '-download_count' %}selected{% endif %}>Most Downloaded</option>
+            <option value="title" {% if sort == 'title' %}selected{% endif %}>Title A-Z</option>
+          </select>
+        </form>
+      </div>
+    </div>
+
+    <!-- Notes grid -->
+    <div class="col-lg-9">
+      <div class="row g-3">
+        {% for note in page_obj %}
+          <div class="col-sm-6 col-xl-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:0 }}">
+            <div class="note-card">
+              <div class="note-card-icon {% if note.get_file_extension == '.pdf' %}pdf{% elif '.doc' in note.get_file_extension %}doc{% elif '.ppt' in note.get_file_extension %}ppt{% elif '.zip' in note.get_file_extension %}zip{% else %}default{% endif %}">
+                <i class="bi {{ note.get_file_icon }}"></i>
+              </div>
+              <div class="d-flex gap-2 flex-wrap mb-2">
+                <span class="badge-dept {{ note.department }}">{{ note.get_department_display }}</span>
+                <span class="badge rounded-pill px-2 py-1" style="background:var(--bg-secondary);color:var(--text-secondary);border:1px solid var(--border);font-size:0.7rem;">Sem {{ note.semester }}</span>
+              </div>
+              <h6 class="note-card-title">{{ note.title }}</h6>
+              <p class="note-card-meta mb-3"><i class="bi bi-book me-1"></i>{{ note.subject }}</p>
+              <div class="note-card-footer">
+                <div class="d-flex align-items-center gap-2">
+                  {% if note.uploader.profile.profile_picture %}
+                    <img src="{{ note.uploader.profile.profile_picture.url }}" class="avatar" width="22" height="22">
+                  {% else %}
+                    <div class="avatar-gradient" style="width:22px;height:22px;font-size:0.6rem;line-height:22px;">{{ note.uploader.username|first|upper }}</div>
+                  {% endif %}
+                  <span style="font-size:0.75rem;color:var(--text-secondary);">{{ note.uploader.profile.get_display_name }}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <span style="font-size:0.75rem;color:var(--text-muted);"><i class="bi bi-download me-1"></i>{{ note.download_count }}</span>
+                  <a href="{% url 'notes:detail' note.pk %}" class="btn btn-primary-gradient btn-sm px-2 py-1" style="font-size:0.75rem;padding:0.25rem 0.65rem;">View</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <div class="col-12 text-center py-5">
+            <i class="bi bi-search text-secondary mb-3" style="font-size:3.5rem;"></i>
+            <h4 class="mt-3 text-secondary">No notes found</h4>
+            <p style="color:var(--text-muted);">Try adjusting your search query or filters</p>
+            <a href="{% url 'notes:list' %}" class="btn btn-glass mt-2">Clear Filters</a>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Pagination -->
+      {% if page_obj.has_other_pages %}
+        <nav class="mt-5 d-flex justify-content-center" aria-label="Notes pagination">
+          <ul class="pagination gap-2">
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="btn btn-glass btn-sm px-3" href="?page={{ page_obj.previous_page_number }}&{% if query %}q={{ query }}&{% endif %}{% if department %}department={{ department }}&{% endif %}{% if semester %}semester={{ semester }}&{% endif %}sort={{ sort }}">
+                  <i class="bi bi-chevron-left"></i>
+                </a>
+              </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+              {% if page_obj.number == num %}
+                <li class="page-item">
+                  <span class="btn btn-primary-gradient btn-sm px-3">{{ num }}</span>
+                </li>
+              {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                  <a class="btn btn-glass btn-sm px-3" href="?page={{ num }}&{% if query %}q={{ query }}&{% endif %}{% if department %}department={{ department }}&{% endif %}{% if semester %}semester={{ semester }}&{% endif %}sort={{ sort }}">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="btn btn-glass btn-sm px-3" href="?page={{ page_obj.next_page_number }}&{% if query %}q={{ query }}&{% endif %}{% if department %}department={{ department }}&{% endif %}{% if semester %}semester={{ semester }}&{% endif %}sort={{ sort }}">
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

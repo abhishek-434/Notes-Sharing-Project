@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Terms of Service - NotesHub{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:900px;">
+  <div class="glass-card p-5 animate-fade-in-up">
+    <h1 class="fw-800 mb-2">Terms of Service</h1>
+    <p style="color:var(--text-muted);">Last updated: January 2025</p>
+    <hr style="border-color:var(--border);">
+    <div style="color:var(--text-secondary);line-height:1.9;" class="mt-4">
+      <h4 class="fw-700 mt-4 mb-2">1. Acceptance of Terms</h4>
+      <p>By using NotesHub, you agree to these Terms of Service. If you do not agree, please do not use the platform.</p>
+      <h4 class="fw-700 mt-4 mb-2">2. User Content</h4>
+      <p>You retain ownership of notes you upload. By uploading, you grant NotesHub a license to host and distribute your content on the platform. You must only upload content you own or have permission to share.</p>
+      <h4 class="fw-700 mt-4 mb-2">3. Prohibited Content</h4>
+      <p>You may not upload copyrighted commercial textbooks, illegal content, offensive material, or content designed to harm other users. Violations result in account suspension.</p>
+      <h4 class="fw-700 mt-4 mb-2">4. Account Responsibility</h4>
+      <p>You are responsible for maintaining the security of your account. NotesHub is not liable for losses resulting from unauthorized account access.</p>
+      <h4 class="fw-700 mt-4 mb-2">5. Disclaimer</h4>
+      <p>NotesHub is provided "as is." We do not guarantee the accuracy or completeness of user-uploaded content. Always verify critical information with your professors.</p>
+      <h4 class="fw-700 mt-4 mb-2">6. Contact</h4>
+      <p>Questions? <a href="{% url 'core:contact' %}">Contact us here</a>.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

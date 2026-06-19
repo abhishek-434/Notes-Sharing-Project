@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}About NotesHub - Share Knowledge, Grow Together{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="py-5" style="background:var(--bg-secondary);padding-top:3rem!important;">
+  <div class="container text-center py-4">
+    <div class="section-divider" data-aos="fade-up"></div>
+    <h1 class="section-title" data-aos="fade-up" data-aos-delay="100">About <span class="gradient-text">NotesHub</span></h1>
+    <p class="section-subtitle" data-aos="fade-up" data-aos-delay="200">
+      We're on a mission to democratize education by making quality study materials accessible to every student.
+    </p>
+  </div>
+</section>
+
+<!-- Mission -->
+<section class="py-5">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6" data-aos="fade-right">
+        <div class="section-divider" style="margin:0 0 1rem;"></div>
+        <h2 class="fw-800 mb-3">Our Mission</h2>
+        <p style="color:var(--text-secondary);line-height:1.8;margin-bottom:1rem;">
+          NotesHub was founded by students, for students. We believe that academic success shouldn't depend on who you know or where you study. Every student deserves access to quality study materials.
+        </p>
+        <p style="color:var(--text-secondary);line-height:1.8;">
+          By creating a collaborative platform where students share their knowledge, we're building a community that lifts everyone up together.
+        </p>
+        <div class="d-flex gap-3 mt-4">
+          <a href="{% url 'accounts:register' %}" class="btn btn-primary-gradient px-4">Join Our Community</a>
+          <a href="{% url 'core:contact' %}" class="btn btn-glass px-4">Contact Us</a>
+        </div>
+      </div>
+      <div class="col-lg-6" data-aos="fade-left">
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="glass-card p-4 text-center">
+              <div style="font-size:2.5rem;margin-bottom:0.75rem;">📚</div>
+              <h5 class="fw-700 mb-1">Quality Notes</h5>
+              <p style="color:var(--text-muted);font-size:0.85rem;margin:0;">Curated study materials from verified students</p>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="glass-card p-4 text-center">
+              <div style="font-size:2.5rem;margin-bottom:0.75rem;">🎯</div>
+              <h5 class="fw-700 mb-1">Organized</h5>
+              <p style="color:var(--text-muted);font-size:0.85rem;margin:0;">Find notes by department, semester & subject</p>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="glass-card p-4 text-center">
+              <div style="font-size:2.5rem;margin-bottom:0.75rem;">🤝</div>
+              <h5 class="fw-700 mb-1">Community</h5>
+              <p style="color:var(--text-muted);font-size:0.85rem;margin:0;">Collaborate, ask, and answer questions</p>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="glass-card p-4 text-center">
+              <div style="font-size:2.5rem;margin-bottom:0.75rem;">🔒</div>
+              <h5 class="fw-700 mb-1">Secure</h5>
+              <p style="color:var(--text-muted);font-size:0.85rem;margin:0;">Safe and secure file storage & sharing</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section class="py-5" style="background:var(--bg-secondary);">
+  <div class="container">
+    <div class="row g-4 text-center">
+      <div class="col-6 col-md-3" data-aos="fade-up">
+        <div class="fw-900 gradient-text" style="font-size:3rem;" data-count="1000" data-format="+">0</div>
+        <p style="color:var(--text-secondary);">Notes Shared</p>
+      </div>
+      <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="100">
+        <div class="fw-900 gradient-text" style="font-size:3rem;" data-count="500" data-format="+">0</div>
+        <p style="color:var(--text-secondary);">Students</p>
+      </div>
+      <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="200">
+        <div class="fw-900 gradient-text" style="font-size:3rem;" data-count="6" data-format="">0</div>
+        <p style="color:var(--text-secondary);">Departments</p>
+      </div>
+      <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="300">
+        <div class="fw-900 gradient-text" style="font-size:3rem;" data-count="100" data-format="%">0</div>
+        <p style="color:var(--text-secondary);">Free to Use</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

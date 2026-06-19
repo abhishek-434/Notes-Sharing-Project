@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block title %}{{ profile_user.profile.get_display_name }} - NotesHub{% endblock %}
+
+{% block content %}
+<div style="padding:2rem 0 4rem;">
+  <div class="container">
+    <!-- Profile Header -->
+    <div class="glass-card p-4 mb-4 animate-fade-in-up">
+      <div class="row align-items-center g-4">
+        <div class="col-auto">
+          <div class="position-relative d-inline-block">
+            {% if profile.profile_picture %}
+              <img src="{{ profile.profile_picture.url }}" alt="{{ profile_user.username }}"
+                   class="avatar" width="100" height="100" style="border:3px solid var(--primary);box-shadow:0 0 30px rgba(99,102,241,0.4);">
+            {% else %}
+              <div class="avatar-gradient" style="width:100px;height:100px;font-size:2.5rem;background:var(--gradient-primary);box-shadow:0 0 30px rgba(99,102,241,0.4);">
+                {{ profile_user.username|first|upper }}
+              </div>
+            {% endif %}
+            {% if profile.email_verified %}
+              <span class="position-absolute bottom-0 end-0 badge p-1" style="background:var(--success);border-radius:50%;border:2px solid var(--bg-primary);"
+                    title="Email Verified">
+                <i class="bi bi-check-circle-fill" style="font-size:0.75rem;"></i>
+              </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="d-flex align-items-center gap-3 flex-wrap mb-1">
+            <h2 class="mb-0 fw-800">{{ profile.get_display_name }}</h2>
+            {% if profile.department %}
+              <span class="badge-dept {{ profile.department }}">{{ profile.get_department_display }}</span>
+            {% endif %}
+          </div>
+          <p style="color:var(--text-muted);font-size:0.9rem;" class="mb-2">@{{ profile_user.username }}</p>
+          {% if profile.college_name %}
+            <p class="mb-1" style="color:var(--text-secondary);font-size:0.9rem;">
+              <i class="bi bi-building me-1"></i>{{ profile.college_name }}
+            </p>
+          {% endif %}
+          {% if profile.course %}
+            <p class="mb-1" style="color:var(--text-secondary);font-size:0.9rem;">
+              <i class="bi bi-mortarboard me-1"></i>{{ profile.course }}
+              {% if profile.semester %} • Semester {{ profile.semester }}{% endif %}
+            </p>
+          {% endif %}
+          {% if profile.bio %}
+            <p class="mt-2 mb-0" style="color:var(--text-secondary);font-size:0.9rem;max-width:600px;">{{ profile.bio }}</p>
+          {% endif %}
+        </div>
+
+        <div class="col-auto">
+          {% if user == profile_user %}
+            <a href="{% url 'accounts:edit_profile' %}" class="btn btn-glass px-4">
+              <i class="bi bi-pencil me-2"></i>Edit Profile
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="row g-3 mt-3">
+        <div class="col-6 col-md-3">
+          <div class="text-center p-3 rounded-3" style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);">
+            <div class="fw-800 gradient-text" style="font-size:1.75rem;">{{ total_uploads }}</div>
+            <div class="small" style="color:var(--text-muted);">Notes Uploaded</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="text-center p-3 rounded-3" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);">
+            <div class="fw-800" style="font-size:1.75rem;color:#34d399;">{{ total_downloads }}</div>
+            <div class="small" style="color:var(--text-muted);">Total Downloads</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="text-center p-3 rounded-3" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);">
+            <div class="fw-800" style="font-size:1.75rem;color:#fbbf24;">{{ profile_user.date_joined|date:"Y" }}</div>
+            <div class="small" style="color:var(--text-muted);">Member Since</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="text-center p-3 rounded-3" style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);">
+            <div class="fw-800" style="font-size:1.75rem;color:#22d3ee;">
+              {% if profile.email_verified %}✓{% else %}✗{% endif %}
+            </div>
+            <div class="small" style="color:var(--text-muted);">Email Verified</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes Grid -->
+    <h4 class="fw-700 mb-4">Notes by {{ profile.get_display_name }}</h4>
+
+    <div class="row g-3">
+      {% for note in user_notes %}
+        <div class="col-sm-6 col-lg-4" data-aos="fade-up">
+          <div class="note-card">
+            <div class="d-flex gap-2 mb-2 flex-wrap">
+              <span class="badge-dept {{ note.department }}">{{ note.get_department_display }}</span>
+              <span class="badge rounded-pill px-2 py-1" style="background:rgba(99,102,241,0.1);color:var(--primary-light);font-size:0.7rem;">Sem {{ note.semester }}</span>
+            </div>
+            <h6 class="note-card-title">{{ note.title }}</h6>
+            <p class="note-card-meta mb-3"><i class="bi bi-book"></i> {{ note.subject }}</p>
+            <div class="note-card-footer">
+              <span style="color:var(--text-muted);font-size:0.8rem;"><i class="bi bi-download me-1"></i>{{ note.download_count }}</span>
+              <a href="{% url 'notes:detail' note.pk %}" class="btn btn-primary-gradient btn-sm px-3 py-1" style="font-size:0.78rem;">View</a>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12 text-center py-4">
+          <i class="bi bi-journal-x" style="font-size:3rem;color:var(--text-muted);"></i>
+          <p class="mt-2" style="color:var(--text-muted);">No notes uploaded yet.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

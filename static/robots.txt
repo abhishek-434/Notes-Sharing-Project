@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /accounts/
+Disallow: /media/
+
+Sitemap: http://localhost:8000/sitemap.xml

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Categories - NotesHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="text-center mb-5 animate-fade-in-up">
+    <div class="section-divider"></div>
+    <h1 class="section-title">Browse by Department</h1>
+    <p class="section-subtitle">Select your department to find relevant study materials</p>
+  </div>
+
+  <div class="row g-4">
+    {% for cat in categories %}
+      <div class="col-sm-6 col-lg-4 col-xl-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:0 }}">
+        <a href="{% url 'categories:department' cat.key %}" class="category-card d-block">
+          <span class="category-icon" style="color:{{ cat.color }};">{{ cat.icon }}</span>
+          <div class="category-name">{{ cat.name }}</div>
+          <div class="category-count mb-2">{{ cat.full_name }}</div>
+          <div class="fw-700" style="color:{{ cat.color }};font-size:1.25rem;">{{ cat.count }}</div>
+          <div style="color:var(--text-muted);font-size:0.8rem;">notes available</div>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

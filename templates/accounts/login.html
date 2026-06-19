@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Login - NotesHub{% endblock %}
+
+{% block content %}
+<div class="auth-page" style="margin-top:-var(--navbar-height);">
+  <div class="auth-card animate-scale-in">
+    <!-- Logo -->
+    <div class="text-center mb-4">
+      <div class="d-inline-flex align-items-center justify-content-center mb-3"
+           style="width:54px;height:54px;background:var(--gradient-primary);border-radius:14px;box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);">
+        <i class="bi bi-book-fill text-white" style="font-size:1.35rem;"></i>
+      </div>
+      <h2 class="fw-800 mb-1" style="font-size:1.6rem;letter-spacing:-0.02em;">Welcome back</h2>
+      <p style="color:var(--text-secondary);font-size:0.875rem;">Sign in to your NotesHub account</p>
+    </div>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label"><i class="bi bi-person me-1" style="color:var(--primary);"></i>Username</label>
+        {{ form.username }}
+        {% if form.username.errors %}
+          <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ form.username.errors.0 }}</div>
+        {% endif %}
+      </div>
+      <div class="mb-3">
+        <label class="form-label"><i class="bi bi-lock me-1" style="color:var(--primary);"></i>Password</label>
+        <div class="position-relative">
+          {{ form.password }}
+          <button type="button" class="btn border-0 position-absolute end-0 top-50 translate-middle-y pe-3"
+                  style="background:transparent;color:var(--text-muted);"
+                  onclick="togglePassword(this)">
+            <i class="bi bi-eye" id="pass-icon" style="font-size:0.95rem;"></i>
+          </button>
+        </div>
+        {% if form.non_field_errors %}
+          <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ form.non_field_errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="remember" style="background-color:var(--bg-secondary);border-color:var(--border);">
+          <label class="form-check-label small" for="remember" style="color:var(--text-secondary);">Remember me</label>
+        </div>
+        <a href="{% url 'accounts:forgot_password' %}" style="font-size:0.825rem;color:var(--primary);font-weight:600;">Forgot password?</a>
+      </div>
+
+      <button type="submit" class="btn btn-primary-gradient w-100 py-2 fw-600 mb-4" style="border-radius:10px;">
+        <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+      </button>
+    </form>
+
+    <div class="text-center">
+      <p style="color:var(--text-secondary);font-size:0.875rem;margin:0;">
+        New to NotesHub?
+        <a href="{% url 'accounts:register' %}" style="color:var(--primary);font-weight:700;">Sign up for free</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+function togglePassword(btn) {
+  const input = btn.closest('.position-relative').querySelector('input');
+  const icon = btn.querySelector('i');
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.className = 'bi bi-eye-slash';
+  } else {
+    input.type = 'password';
+    icon.className = 'bi bi-eye';
+  }
+}
+</script>
+{% endblock %}
+{% endblock %}
