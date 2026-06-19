@@ -164,50 +164,34 @@
 <!-- ══════════════════════════════════════
      CATEGORIES SECTION
 ══════════════════════════════════════ -->
-<section class="py-5" style="background:var(--bg-secondary);">
+<section class="py-5" style="background:var(--bg-secondary); position: relative;">
   <div class="container">
     <div class="text-center mb-5" data-aos="fade-up">
       <div class="section-divider"></div>
       <h2 class="section-title">Browse by Department</h2>
-      <p class="section-subtitle">Find resources quickly under college courses</p>
+      <p class="section-subtitle">Find high-quality notes and study materials tailored for your course</p>
     </div>
 
-    <div class="row g-3 justify-content-center">
-      <div class="col-6 col-md-4 col-lg-3 col-xl-2" data-aos="fade-up" data-aos-delay="0">
-        <a href="{% url 'categories:department' 'BCA' %}" class="category-card">
-          <span class="category-icon">💻</span>
-          <div class="category-name">BCA</div>
-          <div class="category-count">Computer Applications</div>
+    <div class="row g-4 justify-content-center">
+      {% for category in categories %}
+      <div class="col-12 col-sm-6 col-md-4" data-aos="fade-up" data-aos-delay="{% cycle '0' '100' '200' '300' '400' '500' %}">
+        <a href="{% url 'categories:department' category.key %}" class="category-premium-card" style="--card-color: {{ category.color }}; --card-grad: {{ category.grad }}; --card-icon-bg: {{ category.icon_bg }};">
+          <i class="bi bi-arrow-right-short category-premium-arrow"></i>
+          
+          <div class="category-premium-icon">
+            <i class="bi {{ category.icon }}"></i>
+          </div>
+          
+          <h3 class="category-premium-name">{{ category.name }}</h3>
+          <div class="category-premium-fullname">{{ category.full_name }}</div>
+          <p class="category-premium-desc">{{ category.desc }}</p>
+          
+          <div class="category-premium-count">
+            {{ category.count }} Note{{ category.count|pluralize }}
+          </div>
         </a>
       </div>
-      <div class="col-6 col-md-4 col-lg-3 col-xl-2" data-aos="fade-up" data-aos-delay="100">
-        <a href="{% url 'categories:department' 'MCA' %}" class="category-card">
-          <span class="category-icon">🖥️</span>
-          <div class="category-name">MCA</div>
-          <div class="category-count">Masters in CA</div>
-        </a>
-      </div>
-      <div class="col-6 col-md-4 col-lg-3 col-xl-2" data-aos="fade-up" data-aos-delay="200">
-        <a href="{% url 'categories:department' 'BTECH' %}" class="category-card">
-          <span class="category-icon">⚙️</span>
-          <div class="category-name">B.Tech</div>
-          <div class="category-count">Technology</div>
-        </a>
-      </div>
-      <div class="col-6 col-md-4 col-lg-3 col-xl-2" data-aos="fade-up" data-aos-delay="300">
-        <a href="{% url 'categories:department' 'BBA' %}" class="category-card">
-          <span class="category-icon">📊</span>
-          <div class="category-name">BBA</div>
-          <div class="category-count">Business Admin</div>
-        </a>
-      </div>
-      <div class="col-6 col-md-4 col-lg-3 col-xl-2" data-aos="fade-up" data-aos-delay="400">
-        <a href="{% url 'categories:department' 'MBA' %}" class="category-card">
-          <span class="category-icon">🏢</span>
-          <div class="category-name">MBA</div>
-          <div class="category-count">Masters in BA</div>
-        </a>
-      </div>
+      {% endfor %}
     </div>
   </div>
 </section>
