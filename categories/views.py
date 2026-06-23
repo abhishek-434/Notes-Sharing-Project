@@ -2,12 +2,12 @@ from django.shortcuts import render, get_object_or_404
 from notes.models import Note
 
 DEPARTMENTS = {
-    'BCA': {'name': 'BCA', 'full_name': 'Bachelor of Computer Applications', 'color': '#6366f1'},
-    'MCA': {'name': 'MCA', 'full_name': 'Master of Computer Applications',  'color': '#8b5cf6'},
-    'BTECH': {'name': 'B.Tech', 'full_name': 'Bachelor of Technology', 'color': '#06b6d4'},
-    'BBA': {'name': 'BBA', 'full_name': 'Bachelor of Business Administration', 'color': '#10b981'},
-    'MBA': {'name': 'MBA', 'full_name': 'Master of Business Administration',  'color': '#f59e0b'},
-    'MTECH': {'name': 'M.Tech', 'full_name': 'Master of Technology',  'color': '#ef4444'},
+    'BCA': {'name': 'BCA', 'full_name': 'Bachelor of Computer Applications', 'color': '#0c5adb'},
+    'MCA': {'name': 'MCA', 'full_name': 'Master of Computer Applications',  'color': '#1d4ed8'},
+    'BTECH': {'name': 'B.Tech', 'full_name': 'Bachelor of Technology', 'color': '#00d2ff'},
+    'BBA': {'name': 'BBA', 'full_name': 'Bachelor of Business Administration', 'color': '#93c5fd'},
+    'MBA': {'name': 'MBA', 'full_name': 'Master of Business Administration',  'color': '#4facfe'},
+    'MTECH': {'name': 'M.Tech', 'full_name': 'Master of Technology',  'color': '#1e3a8a'},
     'OTHER': {'name': 'Others', 'full_name': 'Other Courses',  'color': '#64748b'},
 }
 
